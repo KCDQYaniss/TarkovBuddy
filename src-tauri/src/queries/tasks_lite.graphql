@@ -1,0 +1,21 @@
+query TasksLite($lang: LanguageCode) {
+  tasks(lang: $lang) {
+    id
+    name
+    normalizedName
+    trader { id name normalizedName imageLink }
+    map { normalizedName }
+    minPlayerLevel
+    kappaRequired
+    taskRequirements { task { id } status }
+    objectives {
+      id
+      type
+      description
+      optional
+      maps { normalizedName }
+      ... on TaskObjectiveBasic { zones { map { normalizedName } position { x y z } outline { x y z } } }
+      ... on TaskObjectiveItem { items { id } count foundInRaid }
+    }
+  }
+}

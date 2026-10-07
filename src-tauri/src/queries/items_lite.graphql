@@ -1,0 +1,11 @@
+query ItemsLite($lang: LanguageCode) {
+  items(lang: $lang) {
+    id
+    name
+    shortName
+    iconLink
+    basePrice
+    avg24hPrice
+    category { name }
+  }
+}

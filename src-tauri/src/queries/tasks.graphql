@@ -1,0 +1,44 @@
+query Tasks($lang: LanguageCode) {
+  tasks(lang: $lang) {
+    id
+    name
+    normalizedName
+    trader { id name normalizedName imageLink }
+    map { normalizedName }
+    minPlayerLevel
+    experience
+    wikiLink
+    kappaRequired
+    lightkeeperRequired
+    factionName
+    restartable
+    taskRequirements { task { id } status }
+    objectives {
+      id
+      type
+      description
+      optional
+      maps { normalizedName }
+      ... on TaskObjectiveBasic { zones { ...Zone } }
+      ... on TaskObjectiveMark { markerItem { id } zones { ...Zone } }
+      ... on TaskObjectiveQuestItem {
+        questItem { id name iconLink }
+        count
+        possibleLocations { map { normalizedName } positions { x y z } }
+        zones { ...Zone }
+      }
+      ... on TaskObjectiveExtract { exitStatus exitName zoneNames count }
+      ... on TaskObjectiveItem { items { id } count foundInRaid zones { ...Zone } }
+      ... on TaskObjectiveShoot { targetNames count zoneNames zones { ...Zone } }
+      ... on TaskObjectiveUseItem { useAny { id } count zoneNames zones { ...Zone } }
+    }
+  }
+}
+
+fragment Zone on TaskZone {
+  map { normalizedName }
+  position { x y z }
+  outline { x y z }
+  top
+  bottom
+}

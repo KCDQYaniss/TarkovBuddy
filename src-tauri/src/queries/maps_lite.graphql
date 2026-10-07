@@ -1,0 +1,10 @@
+query MapsLite($lang: LanguageCode) {
+  maps(lang: $lang) {
+    normalizedName
+    name
+    extracts { id name faction position { x y z } }
+    spawns { sides categories position { x y z } }
+    lootContainers { lootContainer { id name } position { x y z } }
+    lootLoose { items { id } position { x y z } }
+  }
+}

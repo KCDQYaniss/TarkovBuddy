@@ -1,0 +1,20 @@
+query Maps($lang: LanguageCode) {
+  maps(lang: $lang) {
+    normalizedName
+    name
+    nameId
+    raidDuration
+    players
+    extracts {
+      id name faction
+      position { x y z }
+      outline { x y z }
+    }
+    transits { id description conditions position { x y z } }
+    spawns { zoneName sides categories position { x y z } }
+    lootContainers { lootContainer { id name normalizedName } position { x y z } }
+    lootLoose { items { id } position { x y z } }
+    stationaryWeapons { stationaryWeapon { name } position { x y z } }
+    bosses { boss { name normalizedName } spawnChance spawnLocations { name chance } }
+  }
+}

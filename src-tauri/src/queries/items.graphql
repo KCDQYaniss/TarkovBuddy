@@ -1,0 +1,16 @@
+query Items($lang: LanguageCode) {
+  items(lang: $lang) {
+    id
+    name
+    shortName
+    normalizedName
+    iconLink
+    basePrice
+    avg24hPrice
+    width
+    height
+    types
+    category { name }
+    wikiLink
+  }
+}

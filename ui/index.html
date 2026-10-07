@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tarkov Tracker</title>
+  <link rel="stylesheet" href="vendor/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <main>
+      <!-- CARTE -->
+      <section id="view-map" class="view map-view">
+        <aside id="map-side" class="side" aria-label="Calques et filtres"></aside>
+        <div class="map-wrap">
+          <div id="map" aria-label="Carte"></div>
+          <div class="map-bar">
+            <select id="map-select" aria-label="Map"></select>
+            <button id="map-source" class="chip" type="button" hidden></button>
+            <span class="spacer"></span>
+            <button id="center-btn" class="btn sm" type="button">Centrer sur moi</button>
+            <button id="follow-btn" class="btn sm toggle" type="button" aria-pressed="true" title="Recentre la carte sur ta position à chaque capture d'écran"><i></i><span>Suivi : activé</span></button>
+          </div>
+          <section id="empty" class="empty" hidden>
+            <h1>Pas encore de position</h1>
+            <p id="empty-text"></p>
+          </section>
+          <footer id="readout" class="readout" hidden><span id="r-time"></span><span id="r-xyz"></span></footer>
+        </div>
+      </section>
+
+      <!-- QUÊTES -->
+      <section id="view-quests" class="view quests-view" hidden>
+        <div id="q-sync" class="syncbar"></div>
+        <div id="q-traders" class="subtabs" role="tablist"></div>
+        <div class="filters">
+          <div id="q-states" class="chips" role="group" aria-label="Statut"></div>
+          <input id="q-search" class="txt" type="search" placeholder="Rechercher une quête…" spellcheck="false">
+          <select id="q-map" aria-label="Map"></select>
+          <label class="chk"><input id="q-kappa" type="checkbox"><span>Kappa</span></label>
+          <label class="lvl" title="Ton niveau : les quêtes trop avancées passent en « verrouillées »"><span>Niveau</span><input id="q-level" class="txt num" type="number" min="1" max="79" placeholder="—"></label>
+          <span class="spacer"></span><span id="q-count" class="dim"></span>
+        </div>
+        <div id="q-list" class="qlist"></div>
+        <article id="q-detail" class="detail"></article>
+      </section>
+
+      <!-- OBJETS -->
+      <section id="view-items" class="view items-view" hidden>
+        <div class="filters">
+          <input id="i-search" class="txt" type="search" placeholder="Rechercher un objet…" spellcheck="false">
+          <select id="i-cat" aria-label="Catégorie"></select>
+          <select id="i-sort" aria-label="Tri"><option value="name">Tri : nom</option><option value="price">Tri : prix</option></select>
+          <label class="chk"><input id="i-needed" type="checkbox"><span>Utiles à mes quêtes en cours</span></label>
+          <span class="spacer"></span><span id="i-count" class="dim"></span>
+        </div>
+        <div id="i-scroll" class="iscroll"><div id="i-spacer"></div><div id="i-rows"></div></div>
+        <article id="i-detail" class="detail"></article>
+      </section>
+    </main>
+    <nav class="bottombar" aria-label="Navigation">
+      <div class="tabs" role="tablist">
+        <button role="tab" data-view="map" aria-selected="true" type="button" title="Touche 1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5l6-2.2 6 2.2 6-2.2v15.2l-6 2.2-6-2.2-6 2.2zM9 3.3v15.2M15 5.5v15.2"/></svg><span>Carte</span>
+        </button>
+        <button role="tab" data-view="quests" aria-selected="false" type="button" title="Touche 2">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17H6zM9 2.5h6V6H9zM9 10h6M9 13.5h6M9 17h4"/></svg><span>Quêtes</span>
+          <b id="badge-q" class="badge lime" hidden></b>
+        </button>
+        <button role="tab" data-view="items" aria-selected="false" type="button" title="Touche 3">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5zM3 7.5l9 4.5 9-4.5M12 12v9"/></svg><span>Objets</span>
+          <b id="badge-i" class="badge grey" hidden></b>
+        </button>
+      </div>
+      <div class="bar-right">
+        <span id="sync-note" class="dim"></span>
+        <span id="data-status" class="dim"></span>
+        <button id="refresh-btn" class="iconbtn" type="button" title="Actualiser les données du jeu" aria-label="Actualiser les données">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.4-5.7M20 4v5h-5"/></svg>
+        </button>
+        <button id="settings-btn" class="iconbtn" type="button" title="Réglages et diagnostic" aria-label="Réglages">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/></svg>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <ul id="warnings" class="warnings" aria-live="polite"></ul>
+
+  <dialog id="settings">
+    <form method="dialog" id="settings-form">
+      <h2>Réglages</h2>
+      <label>Dossier des captures d'écran
+        <input id="s-shots" class="txt" type="text" spellcheck="false" placeholder="Documents\Escape From Tarkov\Screenshots">
+      </label>
+      <label>Dossier des logs du jeu
+        <input id="s-logs" class="txt" type="text" spellcheck="false" placeholder="Détecté automatiquement">
+      </label>
+      <label>Langue des données
+        <select id="s-lang"><option value="fr">Français</option><option value="en">English</option><option value="de">Deutsch</option><option value="es">Español</option><option value="ru">Русский</option></select>
+      </label>
+      <label class="chk"><input id="s-delete" type="checkbox"><span>Supprimer chaque capture après lecture de la position</span></label>
+      <p class="hint">Les chemins vides utilisent la détection automatique. Le dossier des logs sert à détecter la map et tes quêtes. Avec Steam, c'est en général <code>…\Escape from Tarkov\build\Logs</code>.</p>
+      <details id="diag" class="diag">
+        <summary>Diagnostic de la détection</summary>
+        <div class="body">
+          <p class="hint">Vérifie où sont tes logs, si une map y est trouvée et si tes quêtes sont lues. Si quelque chose cloche, copie le résultat et envoie-le moi.</p>
+          <div class="row">
+            <button id="diag-run" class="btn sm" type="button">Lancer le diagnostic</button>
+            <button id="diag-copy" class="btn sm" type="button">Copier</button>
+          </div>
+          <pre id="diag-out">Pas encore lancé.</pre>
+        </div>
+      </details>
+      <div class="actions">
+        <button class="btn" value="cancel" type="submit">Annuler</button>
+        <button id="s-save" class="btn primary" value="save" type="submit">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="vendor/leaflet.js"></script>
+  <script src="geo.js"></script>
+  <script src="store.js"></script>
+  <script src="mapview.js"></script>
+  <script src="quests.js"></script>
+  <script src="items.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
